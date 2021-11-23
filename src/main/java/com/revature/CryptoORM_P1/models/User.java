@@ -1,4 +1,7 @@
-package com.revature.crypto.models;
+package com.revature.CryptoORM_P1.models;
+
+import com.revature.CryptoORM_P1.annotations.Column;
+import com.revature.CryptoORM_P1.annotations.Table;
 
 /**
  *  User class is a simple data model used to store information relevant to
@@ -8,12 +11,16 @@ package com.revature.crypto.models;
  *
  *  class primarily consists of simple getters and setters
  */
+@Table(tableName = "user")
 public class User {
 
     //000000000000000000000000000000000000000000000000000000000000000000000000000000000
 
+    @Column(columnName = "user_uuid")
     private String userUUID;
+    @Column(columnName = "username")
     private String username;
+    @Column(columnName = "password")
     private String password;
 
     //000000000000000000000000000000000000000000000000000000000000000000000000000000000
