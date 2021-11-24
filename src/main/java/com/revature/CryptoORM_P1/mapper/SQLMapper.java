@@ -15,13 +15,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.stream.Collector;
 
-public class Mapper {
+public class SQLMapper {
 
     StringBuilder builder = new StringBuilder("");
-    private Field field;
-    private Object dataObj;
 
-    public boolean insert(Object obj) throws InvalidClassException {
+    public boolean insert(Object obj) throws InvalidClassException, MethodInvocationException {
 
         // Store necessary data from object
         Class inputClass = obj.getClass();
@@ -67,6 +65,7 @@ public class Mapper {
                     if (method.getAnnotation(Value.class).correspondingColumn()
                                 .equals(fields[i].getAnnotation(Column.class).columnName())) {
                         builder.append(method.invoke(obj) + ", ");
+                        break;
                     }
                 }
             }  catch (InvocationTargetException | IllegalAccessException e) {

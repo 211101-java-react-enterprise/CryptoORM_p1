@@ -2,7 +2,7 @@ package com.revature.CryptoORM_P1;
 
 import com.revature.CryptoORM_P1.annotations.Column;
 import com.revature.CryptoORM_P1.annotations.Table;
-import com.revature.CryptoORM_P1.mapper.Mapper;
+import com.revature.CryptoORM_P1.mapper.SQLMapper;
 import com.revature.CryptoORM_P1.models.Test;
 import com.revature.CryptoORM_P1.models.User;
 
@@ -28,7 +28,7 @@ public class ORMTestDriver {
 
         System.out.println("\n-------------------------\n");
 
-        Mapper mapper = new Mapper();
+        SQLMapper mapper = new SQLMapper();
         Test test = new Test("TestValue", "TestValue", 1.12);
         User newUser = new User("usernameValue", "p4ssword");
         newUser.setUserUUID(UUID.randomUUID().toString());
