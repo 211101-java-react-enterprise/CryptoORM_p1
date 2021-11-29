@@ -119,6 +119,38 @@ public class SQLMapper {
         return builder.toString();
     }
 
+    /**
+     *Takes in generic, properly annotated object and returns SQL select string to be used in joins method
+     * Throws exception if object is not correctly annotated
+     */
+    public String delete (Object obj, String... columns) {
+
+        // Store necessary data from object
+        Class inputClass = obj.getClass();
+        Table table = getTable(inputClass);
+
+        ArrayList<ArrayList<String>> columnData = getColumnsAndValues(obj);
+
+        builder.setLength(0);
+
+        builder.append("delete from " + table.tableName()+" where ");
+
+
+        for (int i = 0; i < columns.length; i++) {
+            for(int k=0; k < columnData.get(0).size(); k++) {
+                if (columnData.get(0).get(k).equals(columns[i])) {
+                    builder.append(columns[i]+" = '"+ columnData.get(1).get(k) +"', ");
+                    break;
+                }
+            }
+        }
+        builder.setLength(builder.length() - 2);
+        builder.append(";");
+
+        return builder.toString();
+    }
+
+
     private Table getTable(Class inputClass) {
         if (inputClass.isAnnotationPresent(Table.class)) {
             return (Table)inputClass.getAnnotation(Table.class);
