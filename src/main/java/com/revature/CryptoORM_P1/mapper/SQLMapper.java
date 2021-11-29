@@ -101,22 +101,49 @@ public class SQLMapper {
         ArrayList<ArrayList<String>> columnData = getColumnsAndValues(obj);
 
         builder.setLength(0);
+        builder.append("select * from " + table.tableName()+" where "+buildColumnValuePairs(columns, columnData));
+        builder.append(";");
 
-        builder.append("select * from " + table.tableName()+" where ");
+        return builder.toString();
+    }
 
+    /**
+     *Takes in generic, properly annotated object and returns SQL select string to be used in joins method
+     * Throws exception if object is not correctly annotated
+     */
+    public String delete (Object obj, String... columns) {
 
+        // Store necessary data from object
+        Class inputClass = obj.getClass();
+        Table table = getTable(inputClass);
+
+        ArrayList<ArrayList<String>> columnData = getColumnsAndValues(obj);
+
+        builder.setLength(0);
+
+        builder.append("delete from " + table.tableName()+" where "+buildColumnValuePairs(columns, columnData));
+        builder.append(";");
+
+        return builder.toString();
+    }
+
+    /**
+     * Used by delete and select method in where clauses of SQL statements. Returns sql formatted string
+     */
+    private String buildColumnValuePairs(String[] columns, ArrayList<ArrayList<String>> columnData) {
+        String result = "";
         for (int i = 0; i < columns.length; i++) {
-            for(int k=0; k < columnData.get(0).size(); k++) {
+            for (int k = 0; k < columnData.get(0).size(); k++) {
                 if (columnData.get(0).get(k).equals(columns[i])) {
-                    builder.append(columns[i]+" = '"+ columnData.get(1).get(k) +"', ");
+                    result += columns[i] + " = '" + columnData.get(1).get(k)+"'";
+                    if(i != columns.length-1){
+                        result +=", ";
+                    }
                     break;
                 }
             }
         }
-        builder.setLength(builder.length() - 2);
-        builder.append(";");
-
-        return builder.toString();
+        return result;
     }
 
     private Table getTable(Class inputClass) {

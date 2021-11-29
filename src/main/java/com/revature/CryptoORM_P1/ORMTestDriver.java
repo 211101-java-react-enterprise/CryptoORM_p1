@@ -39,7 +39,10 @@ public class ORMTestDriver {
         mapper.update(test, "name");
         mapper.update(newUser, "user_uuid");
 
+        //select
         System.out.println(mapper.select(test, "name", "test"));
         System.out.println(mapper.select(newUser, "username", "password"));
+        //delete
+        System.out.println(mapper.delete(newUser, "username", "password"));
     }
 }
