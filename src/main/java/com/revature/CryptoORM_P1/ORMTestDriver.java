@@ -36,5 +36,9 @@ public class ORMTestDriver {
         mapper.insert(test);
         mapper.insert(newUser);
 
+        mapper.update(test, "name");
+        mapper.update(newUser, "user_uuid");
+
+
     }
 }
