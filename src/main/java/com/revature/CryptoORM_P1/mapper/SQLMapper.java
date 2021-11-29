@@ -101,19 +101,7 @@ public class SQLMapper {
         ArrayList<ArrayList<String>> columnData = getColumnsAndValues(obj);
 
         builder.setLength(0);
-
-        builder.append("select * from " + table.tableName()+" where ");
-
-
-        for (int i = 0; i < columns.length; i++) {
-            for(int k=0; k < columnData.get(0).size(); k++) {
-                if (columnData.get(0).get(k).equals(columns[i])) {
-                    builder.append(columns[i]+" = '"+ columnData.get(1).get(k) +"', ");
-                    break;
-                }
-            }
-        }
-        builder.setLength(builder.length() - 2);
+        builder.append("select * from " + table.tableName()+" where "+buildColumnValuePairs(columns, columnData));
         builder.append(";");
 
         return builder.toString();
@@ -133,23 +121,30 @@ public class SQLMapper {
 
         builder.setLength(0);
 
-        builder.append("delete from " + table.tableName()+" where ");
-
-
-        for (int i = 0; i < columns.length; i++) {
-            for(int k=0; k < columnData.get(0).size(); k++) {
-                if (columnData.get(0).get(k).equals(columns[i])) {
-                    builder.append(columns[i]+" = '"+ columnData.get(1).get(k) +"', ");
-                    break;
-                }
-            }
-        }
-        builder.setLength(builder.length() - 2);
+        builder.append("delete from " + table.tableName()+" where "+buildColumnValuePairs(columns, columnData));
         builder.append(";");
 
         return builder.toString();
     }
 
+    /**
+     * Used by delete and select method in where clauses of SQL statements. Returns sql formatted string
+     */
+    private String buildColumnValuePairs(String[] columns, ArrayList<ArrayList<String>> columnData) {
+        String result = "";
+        for (int i = 0; i < columns.length; i++) {
+            for (int k = 0; k < columnData.get(0).size(); k++) {
+                if (columnData.get(0).get(k).equals(columns[i])) {
+                    result += columns[i] + " = '" + columnData.get(1).get(k)+"'";
+                    if(i != columns.length-1){
+                        result +=", ";
+                    }
+                    break;
+                }
+            }
+        }
+        return result;
+    }
 
     private Table getTable(Class inputClass) {
         if (inputClass.isAnnotationPresent(Table.class)) {
