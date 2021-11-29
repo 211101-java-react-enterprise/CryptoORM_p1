@@ -39,6 +39,7 @@ public class ORMTestDriver {
         mapper.update(test, "name");
         mapper.update(newUser, "user_uuid");
 
-
+        System.out.println(mapper.select(test, "name", "test"));
+        System.out.println(mapper.select(newUser, "username", "password"));
     }
 }
