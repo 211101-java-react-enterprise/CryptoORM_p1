@@ -44,5 +44,9 @@ public class ORMTestDriver {
         System.out.println(mapper.select(newUser, "username", "password"));
         //delete
         System.out.println(mapper.delete(newUser, "username", "password"));
+
+        System.out.println("\n\n");
+
+        System.out.println(mapper.joinSelect(newUser, User.class, "user_uuid", "user_uuid", "user_uuid", "user_uuid"));
     }
 }

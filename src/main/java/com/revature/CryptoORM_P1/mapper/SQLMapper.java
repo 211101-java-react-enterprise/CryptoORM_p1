@@ -128,6 +128,49 @@ public class SQLMapper {
     }
 
     /**
+     *  Creates an SQL statement that joins 2 tables on a specified column
+     *
+     * @Params  objA - Primary object, generally contains ID to specify results
+     *          tableB - class definition of table object, used for acquiring column and table names when necessary
+     *          joinOnA - column of table a to join on
+     *          joinOnB - column of table b to join on
+     *          pK - used to determine value in objA that we are checking against (where clause)
+     *          fK - provides column name to compare to in second table (where clause)
+     * @return
+     */
+    public String joinSelect(Object objA, Class classB, String joinOnA, String joinOnB, String pK, String fK) {
+        // select * from tableA a right join tableB b on a.joinonA = b.joinOnB where fk = pk;
+        // Store necessary data from object
+        Class inputClass = objA.getClass();
+        Table tableA = getTable(inputClass);
+        Table tableB = getTable(classB);
+        String pkValue = "";
+
+        Method[] methods = Arrays.stream(inputClass.getMethods())
+                .filter(m -> m.isAnnotationPresent(Value.class))
+                .toArray(Method[]::new);
+
+        try {
+            for (Method method : methods) {
+                if (method.getAnnotation(Value.class).correspondingColumn()
+                        .equals(pK)) {
+                    pkValue = method.invoke(objA).toString();
+                    break;
+                }
+            }
+        }  catch (InvocationTargetException | IllegalAccessException e) {
+            e.printStackTrace();
+            throw new MethodInvocationException("There was an error when attempting to invoke obj's methods");
+        }
+
+        builder.setLength(0);
+        builder.append("select * from " + tableA.tableName() + " a join " + tableB.tableName() +
+                       " b on a." + joinOnA + " = b." + joinOnB + " where b." + fK + " = '" + pkValue + "';");
+
+        return builder.toString();
+    }
+
+    /**
      * Used by delete and select method in where clauses of SQL statements. Returns sql formatted string
      */
     private String buildColumnValuePairs(String[] columns, ArrayList<ArrayList<String>> columnData) {
