@@ -91,37 +91,53 @@ public class SQLMapper {
      *Takes in generic, properly annotated object and returns SQL update string
      * Throws exception if object is not correctly annotated
      */
-    public String update(Object obj, String idColumnName) {
+    public int update(Object obj, String idColumnName) {
 
-        // Store necessary data from object
         Class inputClass = obj.getClass();
         Table table = getTable(inputClass);
-
+        String statement = "";
         ArrayList<ArrayList<String>> columnData = getColumnsAndValues(obj);
 
-        builder.setLength(0);
+        statement+="update " + table.tableName() + " set ";
+        int columnSize = columnData.get(0).size();
+        for (int i = 0; i < columnSize; i++) {
+            statement+=columnData.get(0).get(i) + " = ?";
+            if(i < columnSize-1) statement+=", ";
 
-        builder.append("update " + table.tableName() + " set ");
-
-        for (int i = 0; i < columnData.get(0).size(); i++) {
-            builder.append(columnData.get(0).get(i) + " = '" + columnData.get(1).get(i) + "', ");
         }
 
-        builder.setLength(builder.length() - 2);
+        //builder.setLength(builder.length() - 2);
 
-        builder.append(" where " + idColumnName + " = '");
-        for (int i = 0; i < columnData.get(0).size(); i++) {
-            if (columnData.get(0).get(i).equals(idColumnName)) {
-                builder.append(columnData.get(1).get(i));
-                break;
+        statement+=" where " + idColumnName + " = ?;";
+        System.out.println(statement);
+
+        try{
+            PreparedStatement pstmt = conn.prepareStatement(statement);
+            //int columnSize = columnData.get(0).size();
+            for (int i = 0, j=1; j <= columnSize; i++, j++) {
+//                System.out.println("pstmt: "+pstmt.toString());
+//                System.out.println("size: "+columnData.get(1).size());
+                switch (columnData.get(2).get(i)) {
+                    case "v":
+                        pstmt.setString(j, columnData.get(1).get(i));
+                        break;
+                    case "n":
+                        pstmt.setDouble(j, Double.parseDouble(columnData.get(1).get(i)));
+                        break;
+                }
             }
+            for(int i = 0; i < columnData.get(0).size(); i++){
+                if(idColumnName.equals(columnData.get(0).get(i))){
+                    pstmt.setString(columnSize+1, columnData.get(1).get(i));
+                }
+            }
+
+            System.out.println(pstmt.toString());
+            return pstmt.executeUpdate();
+        } catch(Exception e){
+            e.printStackTrace();
         }
-
-        builder.append("';");
-
-        System.out.println(builder);
-
-        return builder.toString();
+        return -1;
     }
 
     /**
