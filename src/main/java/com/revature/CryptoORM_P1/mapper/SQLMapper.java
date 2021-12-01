@@ -5,6 +5,7 @@ import com.revature.CryptoORM_P1.annotations.Table;
 import com.revature.CryptoORM_P1.annotations.Value;
 import com.revature.CryptoORM_P1.exception.InvalidClassException;
 import com.revature.CryptoORM_P1.exception.MethodInvocationException;
+import com.revature.CryptoORM_P1.util.ConnectionFactory;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -13,16 +14,15 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Properties;
 
 public class SQLMapper {
 
     Connection conn;
 
-    public SQLMapper(Connection conn){
-        this.conn = conn;
-    }
-    public SQLMapper(){
-        super();
+    public SQLMapper(Properties props){
+        ConnectionFactory.getInstance().addProperties(props);
+        conn = ConnectionFactory.getInstance().getConnection();
     }
 
     StringBuilder builder = new StringBuilder("");
@@ -31,7 +31,7 @@ public class SQLMapper {
      *Takes in generic, properly annotated object and returns SQL insert string
      * Throws exception if object is not correctly annotated
      */
-    public PreparedStatement insert(Object obj) throws InvalidClassException, MethodInvocationException {
+    public int insert(Object obj) throws InvalidClassException, MethodInvocationException {
 
         // Store necessary data from object
         Class inputClass = obj.getClass();
@@ -64,16 +64,25 @@ public class SQLMapper {
             PreparedStatement pstmt = conn.prepareStatement(statement);
             //int columnSize = columnData.get(0).size();
             for (int i = 0, j=1; j <= columnSize; i++, j++) {
-                System.out.println("pstmt: "+pstmt.toString());
-                System.out.println("size: "+columnData.get(1).size());
-                pstmt.setString(j, columnData.get(1).get(i));
+//                System.out.println("pstmt: "+pstmt.toString());
+//                System.out.println("size: "+columnData.get(1).size());
+                switch (columnData.get(2).get(i)) {
+                    case "v":
+                        pstmt.setString(j, columnData.get(1).get(i));
+                        break;
+                    case "n":
+                        pstmt.setDouble(j, Double.parseDouble(columnData.get(1).get(i)));
+                        break;
+                }
             }
 
-            return pstmt;
+            System.out.println(pstmt.toString());
+            return pstmt.executeUpdate();
         } catch(Exception e){
             e.printStackTrace();
-            return null;
+
         }
+        return -1;
     }
 
     /**
@@ -234,6 +243,7 @@ public class SQLMapper {
         ArrayList<ArrayList<String>> result = new ArrayList<>();
         result.add(new ArrayList<>());
         result.add(new ArrayList<>());
+        result.add(new ArrayList<>());
 
         Class inputClass = obj.getClass();
 
@@ -246,6 +256,7 @@ public class SQLMapper {
         for (Field field : fields) {
             if (field.isAnnotationPresent(Column.class)) {
                 result.get(0).add(field.getAnnotation(Column.class).columnName());
+                result.get(2).add(field.getAnnotation(Column.class).columnType());
             }
         }
 

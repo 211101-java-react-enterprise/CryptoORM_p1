@@ -5,8 +5,11 @@ import com.revature.CryptoORM_P1.annotations.Table;
 import com.revature.CryptoORM_P1.mapper.SQLMapper;
 import com.revature.CryptoORM_P1.models.Test;
 import com.revature.CryptoORM_P1.models.User;
+import com.revature.CryptoORM_P1.util.ConnectionFactory;
 
 import java.lang.reflect.Field;
+import java.sql.Connection;
+import java.util.Properties;
 import java.util.UUID;
 
 public class ORMTestDriver {
@@ -28,7 +31,8 @@ public class ORMTestDriver {
 
         System.out.println("\n-------------------------\n");
 
-        SQLMapper mapper = new SQLMapper();
+
+        SQLMapper mapper = new SQLMapper(new Properties());
         Test test = new Test("TestValue", "TestValue", 1.12);
         User newUser = new User("usernameValue", "p4ssword");
         newUser.setUserUUID(UUID.randomUUID().toString());
@@ -48,5 +52,9 @@ public class ORMTestDriver {
         System.out.println("\n\n");
 
         System.out.println(mapper.joinSelect(newUser, User.class, "user_uuid", "user_uuid", "user_uuid", "user_uuid"));
+
+        //ConnectionFactory.getInstance().addProperties(properties);
+
+        //ConnectionFactory iamAConnectionFactory = ConnectionFactory.getInstance();
     }
 }
