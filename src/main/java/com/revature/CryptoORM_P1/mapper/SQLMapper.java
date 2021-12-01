@@ -136,7 +136,7 @@ public class SQLMapper {
             for (int i = 0; i < columns.length; i++) {
                 for (int j = 0; j < columnData.get(1).size(); j++) {
                     if (columns[i].equals(columnData.get(0).get(j))) {
-                        setValue(columnData.get(1).get(i), columnData.get(2).get(i), pstmt, j);
+                        setValue(columnData.get(1).get(i), columnData.get(2).get(i), pstmt, i+1);
                         break;
                     }
                 }
