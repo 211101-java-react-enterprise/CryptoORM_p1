@@ -21,14 +21,20 @@ import java.util.Properties;
 
 public class SQLMapper {
 
-    Connection conn;
+    private static Connection conn;
+    private static SQLMapper mapper = new SQLMapper();
 
-    public SQLMapper(Properties props){
+    private SQLMapper(){
+    }
+
+    public static void setProperties(Properties props){
         ConnectionFactory.getInstance().addProperties(props);
         conn = ConnectionFactory.getInstance().getConnection();
     }
 
-    StringBuilder builder = new StringBuilder("");
+    public static SQLMapper getInstance(){
+        return mapper;
+    }
 
     /**
      *Takes in generic, properly annotated object and returns SQL insert string
