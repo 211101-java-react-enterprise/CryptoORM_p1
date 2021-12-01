@@ -4,6 +4,7 @@ import com.revature.CryptoORM_P1.annotations.Column;
 import com.revature.CryptoORM_P1.annotations.Table;
 import com.revature.CryptoORM_P1.annotations.Value;
 import com.revature.CryptoORM_P1.exception.InvalidClassException;
+import com.revature.CryptoORM_P1.exception.InvalidSQLRequestException;
 import com.revature.CryptoORM_P1.exception.MethodInvocationException;
 import com.revature.CryptoORM_P1.util.ConnectionFactory;
 
@@ -33,7 +34,7 @@ public class SQLMapper {
      *Takes in generic, properly annotated object and returns SQL insert string
      * Throws exception if object is not correctly annotated
      */
-    public int insert(Object obj) throws InvalidClassException, MethodInvocationException {
+    public int insert(Object obj) throws InvalidClassException, MethodInvocationException, InvalidSQLRequestException {
 
         // Store necessary data from object
         Class inputClass = obj.getClass();
@@ -41,8 +42,6 @@ public class SQLMapper {
         String statement = "";
         ArrayList<ArrayList<String>> columnData = getColumnsAndValues(obj);
 
-        //StringBuilder builder = new StringBuilder();
-        //builder.setLength(0);
 
         statement+="insert into " + table.tableName() + " (";
         int columnSize = columnData.get(0).size();
@@ -50,8 +49,6 @@ public class SQLMapper {
             statement+= columnData.get(0).get(i);
             if(i < columnSize-1) statement+=", ";
         }
-
-        //builder.setLength(builder.length() - 2);
 
         statement+= ") values (";
 
@@ -61,28 +58,23 @@ public class SQLMapper {
         }
         statement+=")";
 
-        System.out.println(statement);
         try{
             PreparedStatement pstmt = conn.prepareStatement(statement);
-            //int columnSize = columnData.get(0).size();
             for (int i = 0, j=1; j <= columnSize; i++, j++) {
                 setValue(columnData.get(1).get(i), columnData.get(2).get(i), pstmt, j);
             }
 
-            System.out.println(pstmt.toString());
             return pstmt.executeUpdate();
         } catch(Exception e){
-            e.printStackTrace();
-
+            throw new InvalidSQLRequestException("failed to insert: unable to update prepared statement or query ");
         }
-        return -1;
     }
 
     /**
      *Takes in generic, properly annotated object and returns SQL update string
      * Throws exception if object is not correctly annotated
      */
-    public int update(Object obj, String idColumnName) {
+    public int update(Object obj, String idColumnName) throws InvalidClassException, MethodInvocationException, InvalidSQLRequestException{
 
         Class inputClass = obj.getClass();
         Table table = getTable(inputClass);
@@ -97,14 +89,10 @@ public class SQLMapper {
 
         }
 
-        //builder.setLength(builder.length() - 2);
-
         statement+=" where " + idColumnName + " = ?;";
-        System.out.println(statement);
 
         try{
             PreparedStatement pstmt = conn.prepareStatement(statement);
-            //int columnSize = columnData.get(0).size();
             for (int i = 0, j=1; j <= columnSize; i++, j++) {
                 setValue(columnData.get(1).get(i), columnData.get(2).get(i), pstmt, j);
             }
@@ -116,16 +104,15 @@ public class SQLMapper {
 
             return pstmt.executeUpdate();
         } catch(Exception e){
-            e.printStackTrace();
+            throw new InvalidSQLRequestException("failed to update: unable to update prepared statement or query");
         }
-        return -1;
     }
 
     /**
      *Takes in generic, properly annotated object and returns SQL select string to be used in joins method
      * Throws exception if object is not correctly annotated
      */
-    public ResultSet select (Object obj, String... columns) {
+    public ResultSet select (Object obj, String... columns) throws InvalidClassException, MethodInvocationException, InvalidSQLRequestException{
 
         // Store necessary data from object
         Class inputClass = obj.getClass();
@@ -148,22 +135,19 @@ public class SQLMapper {
                     }
                 }
             }
-            System.out.println(pstmt.toString() + "\n");
 
             return pstmt.executeQuery();
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new InvalidSQLRequestException("Failed to select: unable to update prepared statement or query");
         }
-
-        return null;
     }
 
     /**
      *Takes in generic, properly annotated object and returns SQL select string to be used in joins method
      * Throws exception if object is not correctly annotated
      */
-    public int delete (Object obj, String... columns) {
+    public int delete (Object obj, String... columns) throws InvalidClassException, MethodInvocationException, InvalidSQLRequestException{
 
         // Store necessary data from object
         Class inputClass = obj.getClass();
@@ -172,8 +156,6 @@ public class SQLMapper {
         ArrayList<ArrayList<String>> columnData = getColumnsAndValues(obj);
 
         String statement = "delete from " + table.tableName()+" where "+ buildStatementWhereClause(columns);
-        //statement+=(";");
-        System.out.println(statement);
         int columnSize = columnData.get(0).size();
         try {
             PreparedStatement pstmt = conn.prepareStatement(statement);
@@ -186,13 +168,10 @@ public class SQLMapper {
                 }
             }
 
-        System.out.println(pstmt.toString());
         return pstmt.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new InvalidSQLRequestException("Failed to delete: unable to update prepared statement or query");
         }
-
-        return -1;
     }
 
     /**
@@ -206,13 +185,24 @@ public class SQLMapper {
      *          fK - provides column name to compare to in second table (where clause)
      * @return
      */
-    public String joinSelect(Object objA, Class classB, String joinOnA, String joinOnB, String pK, String fK) {
+    public ResultSet joinSelect(Object objA, Class classB, String joinOnA, String joinOnB, String pK, String fK)throws InvalidClassException, MethodInvocationException, InvalidSQLRequestException {
         // select * from tableA a right join tableB b on a.joinonA = b.joinOnB where fk = pk;
         // Store necessary data from object
         Class inputClass = objA.getClass();
         Table tableA = getTable(inputClass);
         Table tableB = getTable(classB);
         String pkValue = "";
+        String pkType = "";
+        Field[] fields = objA.getClass().getDeclaredFields();
+        //get type for pk
+        for(int i = 0; i < fields.length; i++){
+            if (fields[i].isAnnotationPresent(Column.class)&&
+                    fields[i].getAnnotation(Column.class).columnName().equals(pK))
+            {
+                pkType = fields[i].getAnnotation(Column.class).columnType();
+                break;
+            }
+        }
 
         Method[] methods = Arrays.stream(inputClass.getMethods())
                 .filter(m -> m.isAnnotationPresent(Value.class))
@@ -230,13 +220,19 @@ public class SQLMapper {
             e.printStackTrace();
             throw new MethodInvocationException("There was an error when attempting to invoke obj's methods");
         }
+        String statement = "select * from " + tableA.tableName() + " a join " + tableB.tableName() +
+                " b on a." + joinOnA + " = b." + joinOnB + " where b." + fK + " = ?;";
 
-        builder.setLength(0);
-        builder.append("select * from " + tableA.tableName() + " a join " + tableB.tableName() +
-                       " b on a." + joinOnA + " = b." + joinOnB + " where b." + fK + " = '" + pkValue + "';");
+        try{
+            PreparedStatement pstmt = conn.prepareStatement(statement);
 
-        return builder.toString();
+            setValue(pkValue, pkType, pstmt, 1);
+            return pstmt.executeQuery();
+        } catch(Exception e){
+            throw new InvalidSQLRequestException("Failed to join: unable to update prepared statement or query");
+        }
     }
+
 
     /**
      *      Used when setting SQL values in PreparedStatement, repetitive logic
@@ -268,7 +264,7 @@ public class SQLMapper {
         return result;
     }
 
-    private Table getTable(Class inputClass) {
+    private Table getTable(Class inputClass) throws InvalidClassException {
         if (inputClass.isAnnotationPresent(Table.class)) {
             return (Table)inputClass.getAnnotation(Table.class);
         } else {
@@ -283,7 +279,7 @@ public class SQLMapper {
      * @param obj
      * @return
      */
-    private ArrayList<ArrayList<String>> getColumnsAndValues(Object obj) {
+    private ArrayList<ArrayList<String>> getColumnsAndValues(Object obj) throws MethodInvocationException {
 
         ArrayList<ArrayList<String>> result = new ArrayList<>();
         result.add(new ArrayList<>());
