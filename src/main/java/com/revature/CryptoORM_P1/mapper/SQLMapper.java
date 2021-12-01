@@ -66,16 +66,7 @@ public class SQLMapper {
             PreparedStatement pstmt = conn.prepareStatement(statement);
             //int columnSize = columnData.get(0).size();
             for (int i = 0, j=1; j <= columnSize; i++, j++) {
-//                System.out.println("pstmt: "+pstmt.toString());
-//                System.out.println("size: "+columnData.get(1).size());
-                switch (columnData.get(2).get(i)) {
-                    case "v":
-                        pstmt.setString(j, columnData.get(1).get(i));
-                        break;
-                    case "n":
-                        pstmt.setDouble(j, Double.parseDouble(columnData.get(1).get(i)));
-                        break;
-                }
+                setValue(columnData.get(1).get(i), columnData.get(2).get(i), pstmt, j);
             }
 
             System.out.println(pstmt.toString());
@@ -115,23 +106,13 @@ public class SQLMapper {
             PreparedStatement pstmt = conn.prepareStatement(statement);
             //int columnSize = columnData.get(0).size();
             for (int i = 0, j=1; j <= columnSize; i++, j++) {
-//                System.out.println("pstmt: "+pstmt.toString());
-//                System.out.println("size: "+columnData.get(1).size());
-                switch (columnData.get(2).get(i)) {
-                    case "v":
-                        pstmt.setString(j, columnData.get(1).get(i));
-                        break;
-                    case "n":
-                        pstmt.setDouble(j, Double.parseDouble(columnData.get(1).get(i)));
-                        break;
-                }
+                setValue(columnData.get(1).get(i), columnData.get(2).get(i), pstmt, j);
             }
             for(int i = 0; i < columnData.get(0).size(); i++){
                 if(idColumnName.equals(columnData.get(0).get(i))){
-                    pstmt.setString(columnSize+1, columnData.get(1).get(i));
+                    setValue(columnData.get(1).get(i), columnData.get(2).get(i), pstmt, columnSize + 1);
                 }
             }
-
 
             return pstmt.executeUpdate();
         } catch(Exception e){
@@ -162,14 +143,7 @@ public class SQLMapper {
             for (int i = 0; i < columns.length; i++) {
                 for (int j = 0; j < columnData.get(1).size(); j++) {
                     if (columns[i].equals(columnData.get(0).get(j))) {
-                        switch (columnData.get(2).get(j)) {
-                            case "v":
-                                pstmt.setString(j, columnData.get(1).get(j));
-                                break;
-                            case "n":
-                                pstmt.setDouble(j, Double.parseDouble(columnData.get(1).get(j)));
-                                break;
-                        }
+                        setValue(columnData.get(1).get(i), columnData.get(2).get(i), pstmt, j);
                         break;
                     }
                 }
@@ -205,17 +179,9 @@ public class SQLMapper {
             PreparedStatement pstmt = conn.prepareStatement(statement);
             for(int k = 0; k< columns.length; k++){
                 for (int i = 0, j=1; j <= columnSize; i++, j++) {
-//                System.out.println("pstmt: "+pstmt.toString());
-//                System.out.println("size: "+columnData.get(1).size());
-                    if(columns[k].equals(columnData.get(0).get(i))){
-                        switch (columnData.get(2).get(i)) {
-                            case "v":
-                                pstmt.setString(j, columnData.get(1).get(i));
-                                break;
-                            case "n":
-                                pstmt.setDouble(j, Double.parseDouble(columnData.get(1).get(i)));
-                                break;
-                        }
+                    if(columns[k].equals(columnData.get(0).get(i))) {
+                        setValue(columnData.get(1).get(i), columnData.get(2).get(i), pstmt, j);
+                        break;
                     }
                 }
             }
@@ -272,6 +238,24 @@ public class SQLMapper {
         return builder.toString();
     }
 
+    /**
+     *      Used when setting SQL values in PreparedStatement, repetitive logic
+     * @param value
+     * @param type
+     * @param pstmt
+     * @param index
+     * @throws SQLException
+     */
+    private void setValue(String value, String type, PreparedStatement pstmt, int index) throws SQLException {
+        switch (type) {
+            case "v":
+                pstmt.setString(index, value);
+                break;
+            case "n":
+                pstmt.setDouble(index, Double.parseDouble(value));
+                break;
+        }
+    }
     /**
      * Used by delete and select method in where clauses of SQL statements. Returns sql formatted string
      */
