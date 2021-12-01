@@ -132,7 +132,7 @@ public class SQLMapper {
                 }
             }
 
-            System.out.println(pstmt.toString());
+
             return pstmt.executeUpdate();
         } catch(Exception e){
             e.printStackTrace();
@@ -189,7 +189,7 @@ public class SQLMapper {
      *Takes in generic, properly annotated object and returns SQL select string to be used in joins method
      * Throws exception if object is not correctly annotated
      */
-    public String delete (Object obj, String... columns) {
+    public int delete (Object obj, String... columns) {
 
         // Store necessary data from object
         Class inputClass = obj.getClass();
@@ -197,12 +197,36 @@ public class SQLMapper {
 
         ArrayList<ArrayList<String>> columnData = getColumnsAndValues(obj);
 
-        builder.setLength(0);
+        String statement = "delete from " + table.tableName()+" where "+ buildStatementWhereClause(columns);
+        //statement+=(";");
+        System.out.println(statement);
+        int columnSize = columnData.get(0).size();
+        try {
+            PreparedStatement pstmt = conn.prepareStatement(statement);
+            for(int k = 0; k< columns.length; k++){
+                for (int i = 0, j=1; j <= columnSize; i++, j++) {
+//                System.out.println("pstmt: "+pstmt.toString());
+//                System.out.println("size: "+columnData.get(1).size());
+                    if(columns[k].equals(columnData.get(0).get(i))){
+                        switch (columnData.get(2).get(i)) {
+                            case "v":
+                                pstmt.setString(j, columnData.get(1).get(i));
+                                break;
+                            case "n":
+                                pstmt.setDouble(j, Double.parseDouble(columnData.get(1).get(i)));
+                                break;
+                        }
+                    }
+                }
+            }
 
-        builder.append("delete from " + table.tableName()+" where "+ buildStatementWhereClause(columns));
-        builder.append(";");
+        System.out.println(pstmt.toString());
+        return pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
 
-        return builder.toString();
+        return -1;
     }
 
     /**
