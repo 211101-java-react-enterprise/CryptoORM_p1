@@ -12,6 +12,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Properties;
@@ -126,19 +128,45 @@ public class SQLMapper {
      *Takes in generic, properly annotated object and returns SQL select string to be used in joins method
      * Throws exception if object is not correctly annotated
      */
-    public String select (Object obj, String... columns) {
+    public ResultSet select (Object obj, String... columns) {
 
         // Store necessary data from object
         Class inputClass = obj.getClass();
         Table table = getTable(inputClass);
 
+        String statement = "";
+
         ArrayList<ArrayList<String>> columnData = getColumnsAndValues(obj);
 
-        builder.setLength(0);
-        builder.append("select * from " + table.tableName()+" where "+buildColumnValuePairs(columns, columnData));
-        builder.append(";");
+        statement += "select * from " + table.tableName() + " where " + buildStatementWhereClause(columns);
 
-        return builder.toString();
+        try {
+            PreparedStatement pstmt = conn.prepareStatement(statement);
+
+            for (int i = 0; i < columns.length; i++) {
+                for (int j = 0; j < columnData.get(1).size(); j++) {
+                    if (columns[i].equals(columnData.get(0).get(j))) {
+                        switch (columnData.get(2).get(j)) {
+                            case "v":
+                                pstmt.setString(j, columnData.get(1).get(j));
+                                break;
+                            case "n":
+                                pstmt.setDouble(j, Double.parseDouble(columnData.get(1).get(j)));
+                                break;
+                        }
+                        break;
+                    }
+                }
+            }
+            System.out.println(pstmt.toString() + "\n");
+
+            return pstmt.executeQuery();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 
     /**
@@ -155,7 +183,7 @@ public class SQLMapper {
 
         builder.setLength(0);
 
-        builder.append("delete from " + table.tableName()+" where "+buildColumnValuePairs(columns, columnData));
+        builder.append("delete from " + table.tableName()+" where "+ buildStatementWhereClause(columns));
         builder.append(";");
 
         return builder.toString();
@@ -207,18 +235,11 @@ public class SQLMapper {
     /**
      * Used by delete and select method in where clauses of SQL statements. Returns sql formatted string
      */
-    private String buildColumnValuePairs(String[] columns, ArrayList<ArrayList<String>> columnData) {
+    private String buildStatementWhereClause(String[] columns) {
         String result = "";
         for (int i = 0; i < columns.length; i++) {
-            for (int k = 0; k < columnData.get(0).size(); k++) {
-                if (columnData.get(0).get(k).equals(columns[i])) {
-                    result += columns[i] + " = '" + columnData.get(1).get(k)+"'";
-                    if(i != columns.length-1){
-                        result +=", ";
-                    }
-                    break;
-                }
-            }
+            result += columns[i] + " = ? ";
+            if(i != columns.length-1) result += "and ";
         }
         return result;
     }
