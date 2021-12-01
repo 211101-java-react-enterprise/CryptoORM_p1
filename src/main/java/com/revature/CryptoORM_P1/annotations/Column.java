@@ -7,5 +7,5 @@ import java.lang.annotation.*;
 @Documented
 public @interface Column {
     public String columnName() default "";
-
+    public String columnType() default "";
 }

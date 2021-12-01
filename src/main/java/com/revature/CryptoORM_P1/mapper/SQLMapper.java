@@ -9,10 +9,21 @@ import com.revature.CryptoORM_P1.exception.MethodInvocationException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 public class SQLMapper {
+
+    Connection conn;
+
+    public SQLMapper(Connection conn){
+        this.conn = conn;
+    }
+    public SQLMapper(){
+        super();
+    }
 
     StringBuilder builder = new StringBuilder("");
 
@@ -20,35 +31,49 @@ public class SQLMapper {
      *Takes in generic, properly annotated object and returns SQL insert string
      * Throws exception if object is not correctly annotated
      */
-    public String insert(Object obj) throws InvalidClassException, MethodInvocationException {
+    public PreparedStatement insert(Object obj) throws InvalidClassException, MethodInvocationException {
 
         // Store necessary data from object
         Class inputClass = obj.getClass();
         Table table = getTable(inputClass);
-
+        String statement = "";
         ArrayList<ArrayList<String>> columnData = getColumnsAndValues(obj);
 
-        builder.setLength(0);
+        //StringBuilder builder = new StringBuilder();
+        //builder.setLength(0);
 
-        builder.append("insert into " + table.tableName() + " (");
-
-        for (String column : columnData.get(0)) {
-            builder.append(column + ", ");
+        statement+="insert into " + table.tableName() + " (";
+        int columnSize = columnData.get(0).size();
+        for (int i = 0; i < columnSize; i++) {
+            statement+= columnData.get(0).get(i);
+            if(i < columnSize-1) statement+=", ";
         }
 
-        builder.setLength(builder.length() - 2);
+        //builder.setLength(builder.length() - 2);
 
-        builder.append(") values ");
+        statement+= ") values (";
 
-        for (String value : columnData.get(1)) {
-            builder.append("'" + value + "', ");
+        for (int i = 0; i < columnSize; i++) {
+            statement+= "?";
+            if(i < columnSize-1) statement+=", ";
         }
-        builder.setLength(builder.length() - 2);
-        builder.append(";");
+        statement+=")";
 
-        System.out.println(builder);
+        System.out.println(statement);
+        try{
+            PreparedStatement pstmt = conn.prepareStatement(statement);
+            //int columnSize = columnData.get(0).size();
+            for (int i = 0, j=1; j <= columnSize; i++, j++) {
+                System.out.println("pstmt: "+pstmt.toString());
+                System.out.println("size: "+columnData.get(1).size());
+                pstmt.setString(j, columnData.get(1).get(i));
+            }
 
-        return builder.toString();
+            return pstmt;
+        } catch(Exception e){
+            e.printStackTrace();
+            return null;
+        }
     }
 
     /**
