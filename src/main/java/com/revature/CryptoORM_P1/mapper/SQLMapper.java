@@ -140,7 +140,7 @@ public class SQLMapper {
             for (int i = 0; i < columns.length; i++) {
                 for (int j = 0; j < columnData.get(1).size(); j++) {
                     if (columns[i].equals(columnData.get(0).get(j))) {
-                        setValue(columnData.get(1).get(i), columnData.get(2).get(i), pstmt, i+1);
+                        setValue(columnData.get(1).get(j), columnData.get(2).get(j), pstmt, i+1);
                         break;
                     }
                 }
@@ -322,7 +322,13 @@ public class SQLMapper {
                 for (Method method : methods) {
                     if (method.getAnnotation(Value.class).correspondingColumn()
                             .equals(result.get(0).get(i))) {
-                        result.get(1).add(method.invoke(obj).toString());
+
+                        Object value = method.invoke(obj);
+                        if (value != null) {
+                            result.get(1).add(value.toString());
+                        } else {
+                            result.get(1).add("");
+                        }
                         break;
                     }
                 }
