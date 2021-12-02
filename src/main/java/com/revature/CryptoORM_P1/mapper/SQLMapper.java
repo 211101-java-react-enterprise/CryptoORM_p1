@@ -128,7 +128,11 @@ public class SQLMapper {
 
         ArrayList<ArrayList<String>> columnData = getColumnsAndValues(obj);
 
-        statement += "select * from " + table.tableName() + " where " + buildStatementWhereClause(columns);
+        statement += "select * from " + table.tableName();
+        if (columns.length != 0) {
+            statement += " where " + buildStatementWhereClause(columns);
+        }
+
 
         try {
             PreparedStatement pstmt = conn.prepareStatement(statement);
@@ -161,7 +165,7 @@ public class SQLMapper {
 
         ArrayList<ArrayList<String>> columnData = getColumnsAndValues(obj);
 
-        String statement = "delete from " + table.tableName()+" where "+ buildStatementWhereClause(columns);
+        String statement = "delete from " + table.tableName() + " where " + buildStatementWhereClause(columns);
         int columnSize = columnData.get(0).size();
         try {
             PreparedStatement pstmt = conn.prepareStatement(statement);
