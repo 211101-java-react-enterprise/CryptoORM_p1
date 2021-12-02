@@ -173,9 +173,11 @@ public class SQLMapper {
                     }
                 }
             }
-
-        return pstmt.executeUpdate();
+            int status = pstmt.executeUpdate();
+            if(status == 0) return -1;//return -1 if there is no element to delete
+            else return status;
         } catch (SQLException e) {
+            e.printStackTrace();
             throw new InvalidSQLRequestException("Failed to delete: unable to update prepared statement or query");
         }
     }
