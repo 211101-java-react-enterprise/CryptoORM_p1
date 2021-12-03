@@ -80,7 +80,7 @@ public class SQLMapper {
      *Takes in generic, properly annotated object and returns SQL update string
      * Throws exception if object is not correctly annotated
      */
-    public int update(Object obj, String idColumnName) throws InvalidClassException, MethodInvocationException, InvalidSQLRequestException{
+    public int update(Object obj, String... idColumnNames) throws InvalidClassException, MethodInvocationException, InvalidSQLRequestException{
 
         Class inputClass = obj.getClass();
         Table table = getTable(inputClass);
@@ -95,16 +95,18 @@ public class SQLMapper {
 
         }
 
-        statement+=" where " + idColumnName + " = ?;";
+        statement+=" where " + buildStatementWhereClause(idColumnNames);
 
         try{
             PreparedStatement pstmt = conn.prepareStatement(statement);
             for (int i = 0, j=1; j <= columnSize; i++, j++) {
                 setValue(columnData.get(1).get(i), columnData.get(2).get(i), pstmt, j);
             }
-            for(int i = 0; i < columnData.get(0).size(); i++){
-                if(idColumnName.equals(columnData.get(0).get(i))){
-                    setValue(columnData.get(1).get(i), columnData.get(2).get(i), pstmt, columnSize + 1);
+            for (int j = 0; j < idColumnNames.length; j++) {
+                for (int i = 0; i < columnData.get(0).size(); i++) {
+                    if (idColumnNames[j].equals(columnData.get(0).get(i))) {
+                        setValue(columnData.get(1).get(i), columnData.get(2).get(i), pstmt, columnSize + j + 1);
+                    }
                 }
             }
 
