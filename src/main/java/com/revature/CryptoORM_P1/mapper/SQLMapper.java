@@ -4,7 +4,6 @@ import com.revature.CryptoORM_P1.annotations.Column;
 import com.revature.CryptoORM_P1.annotations.Table;
 import com.revature.CryptoORM_P1.annotations.Value;
 import com.revature.CryptoORM_P1.exception.InvalidClassException;
-import com.revature.CryptoORM_P1.exception.InvalidSQLRequestException;
 import com.revature.CryptoORM_P1.exception.MethodInvocationException;
 import com.revature.CryptoORM_P1.util.ConnectionFactory;
 
@@ -27,7 +26,7 @@ public class SQLMapper {
     private SQLMapper(){
     }
 
-    public static void setProperties(Properties props){
+    public static void setProperties(Properties props) throws SQLException {
         ConnectionFactory.getInstance().addProperties(props);
         conn = ConnectionFactory.getInstance().getConnection();
     }
@@ -40,7 +39,7 @@ public class SQLMapper {
      *Takes in generic, properly annotated object and returns SQL insert string
      * Throws exception if object is not correctly annotated
      */
-    public int insert(Object obj) throws InvalidClassException, MethodInvocationException, InvalidSQLRequestException {
+    public int insert(Object obj) throws InvalidClassException, MethodInvocationException, SQLException {
 
         // Store necessary data from object
         Class inputClass = obj.getClass();
@@ -71,8 +70,9 @@ public class SQLMapper {
             }
 
             return pstmt.executeUpdate();
-        } catch(Exception e){
-            throw new InvalidSQLRequestException("failed to insert: unable to update prepared statement or query ");
+    } catch(SQLException e){
+            e.printStackTrace();
+            throw new SQLException("failed to insert: SQLMapper#insert: " + e.getMessage());
         }
     }
 
@@ -80,7 +80,7 @@ public class SQLMapper {
      *Takes in generic, properly annotated object and returns SQL update string
      * Throws exception if object is not correctly annotated
      */
-    public int update(Object obj, String... idColumnNames) throws InvalidClassException, MethodInvocationException, InvalidSQLRequestException{
+    public int update(Object obj, String... idColumnNames) throws InvalidClassException, MethodInvocationException, SQLException{
 
         Class inputClass = obj.getClass();
         Table table = getTable(inputClass);
@@ -113,8 +113,9 @@ public class SQLMapper {
             System.out.println("\n\n\n" + pstmt + "\n\n\n");
 
             return pstmt.executeUpdate();
-        } catch(Exception e){
-            throw new InvalidSQLRequestException("failed to update: unable to update prepared statement or query");
+        } catch(SQLException e){
+            e.printStackTrace();
+            throw new SQLException("failed to update: SQLMapper#update: " + e.getMessage());
         }
     }
 
@@ -122,7 +123,7 @@ public class SQLMapper {
      *Takes in generic, properly annotated object and returns SQL select string to be used in joins method
      * Throws exception if object is not correctly annotated
      */
-    public ResultSet select (Object obj, String... columns) throws InvalidClassException, MethodInvocationException, InvalidSQLRequestException{
+    public ResultSet select (Object obj, String... columns) throws InvalidClassException, MethodInvocationException, SQLException{
 
         // Store necessary data from object
         Class inputClass = obj.getClass();
@@ -153,7 +154,8 @@ public class SQLMapper {
             return pstmt.executeQuery();
 
         } catch (SQLException e) {
-            throw new InvalidSQLRequestException("Failed to select: unable to update prepared statement or query");
+            e.printStackTrace();
+            throw new SQLException("Failed to select: SQLMapper#select: " + e.getMessage());
         }
     }
 
@@ -161,7 +163,7 @@ public class SQLMapper {
      *Takes in generic, properly annotated object and returns SQL select string to be used in joins method
      * Throws exception if object is not correctly annotated
      */
-    public int delete (Object obj, String... columns) throws InvalidClassException, MethodInvocationException, InvalidSQLRequestException{
+    public int delete (Object obj, String... columns) throws InvalidClassException, MethodInvocationException, SQLException{
 
         // Store necessary data from object
         Class inputClass = obj.getClass();
@@ -186,7 +188,7 @@ public class SQLMapper {
             else return status;
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new InvalidSQLRequestException("Failed to delete: unable to update prepared statement or query");
+            throw new SQLException("Failed to delete: SQLMapper#delete: " + e.getMessage());
         }
     }
 
@@ -201,7 +203,7 @@ public class SQLMapper {
      *          fK - provides column name to compare to in second table (where clause)
      * @return
      */
-    public ResultSet joinSelect(Object objA, Class classB, String joinOnA, String joinOnB, String pK, String fK)throws InvalidClassException, MethodInvocationException, InvalidSQLRequestException {
+    public ResultSet joinSelect(Object objA, Class classB, String joinOnA, String joinOnB, String pK, String fK)throws InvalidClassException, MethodInvocationException, SQLException {
         // select * from tableA a right join tableB b on a.joinonA = b.joinOnB where fk = pk;
         // Store necessary data from object
         Class inputClass = objA.getClass();
@@ -245,7 +247,8 @@ public class SQLMapper {
             setValue(pkValue, pkType, pstmt, 1);
             return pstmt.executeQuery();
         } catch(Exception e){
-            throw new InvalidSQLRequestException("Failed to join: unable to update prepared statement or query");
+            e.printStackTrace();
+            throw new SQLException("Failed to join: unable to update prepared statement or query");
         }
     }
 
@@ -338,7 +341,7 @@ public class SQLMapper {
                 }
             }  catch (InvocationTargetException | IllegalAccessException e) {
                 e.printStackTrace();
-                throw new MethodInvocationException("There was an error when attempting to invoke obj's methods");
+                throw new MethodInvocationException("SQLMapper#getColumnsAndValue: There was an error when attempting to invoke obj's methods");
             }
         }
         return result;
