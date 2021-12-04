@@ -110,8 +110,6 @@ public class SQLMapper {
                 }
             }
 
-            System.out.println("\n\n\n" + pstmt + "\n\n\n");
-
             return pstmt.executeUpdate();
         } catch(SQLException e){
             e.printStackTrace();
