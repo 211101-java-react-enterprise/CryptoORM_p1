@@ -110,6 +110,8 @@ public class SQLMapper {
                 }
             }
 
+            System.out.println("\n\n\n" + pstmt + "\n\n\n");
+
             return pstmt.executeUpdate();
         } catch(Exception e){
             throw new InvalidSQLRequestException("failed to update: unable to update prepared statement or query");
@@ -172,9 +174,9 @@ public class SQLMapper {
         try {
             PreparedStatement pstmt = conn.prepareStatement(statement);
             for(int k = 0; k< columns.length; k++){
-                for (int i = 0, j=1; j <= columnSize; i++, j++) {
+                for (int i = 0; i < columnSize; i++) {
                     if(columns[k].equals(columnData.get(0).get(i))) {
-                        setValue(columnData.get(1).get(i), columnData.get(2).get(i), pstmt, j);
+                        setValue(columnData.get(1).get(i), columnData.get(2).get(i), pstmt, k + 1);
                         break;
                     }
                 }
