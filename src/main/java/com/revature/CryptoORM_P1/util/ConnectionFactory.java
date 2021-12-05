@@ -42,7 +42,7 @@ public class ConnectionFactory {
         this.props = props;
     }
 
-    public Connection getConnection() {
+    public Connection getConnection() throws SQLException {
 
         Connection conn = null;
 
@@ -50,6 +50,7 @@ public class ConnectionFactory {
             conn = DriverManager.getConnection(props.getProperty("url"), props.getProperty("username"), props.getProperty("password"));
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new SQLException("ConnectionFactory#getConnection: " + e.getMessage());
         }
 
         return conn;
