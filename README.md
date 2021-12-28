@@ -1,4 +1,3 @@
-<pre>
 # CryptoORM_p1
 Built by Andrew Aslakson and Cole Paris.
 ORM project created in revature batch 211101 java-react-enterprise curriculum.
@@ -36,5 +35,3 @@ Our ORM uses three Annotations in order to properly model our entity classes:
 @Value - Method-level annotation, sits above getter methods for fields marked with @Column.
          Note: This annotation must be given the corresponding column attribute in order to properly 
                Locate Which column is associated with the getter.
-               
-</pre>
