@@ -19,14 +19,17 @@ password={password}
 
 ### Method Naming Conventions
 Our naming conventions for using the methods of our mapper follow the naming conventions in SQL
+<pre>
 select - returns a result set with the result from the select query
 insert - Inserts a row into database
 update - updates a row in the database
 delete - delets a row or in database
+</pre>
 --------------------------------------------------
 
 ### Annotations
 Our ORM uses three Annotations in order to properly model our entity classes:
+<pre>
 @Table - Class-Level annotation, sits above a class and provides database table name
 
 @Column - Field-level annotation, sits above the fields that define columns in the table.
@@ -35,3 +38,4 @@ Our ORM uses three Annotations in order to properly model our entity classes:
 @Value - Method-level annotation, sits above getter methods for fields marked with @Column.
          Note: This annotation must be given the corresponding column attribute in order to properly 
                Locate Which column is associated with the getter.
+</pre>
