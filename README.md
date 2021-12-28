@@ -24,7 +24,7 @@ Our naming conventions for using the methods of our mapper follow the naming con
 select - returns a result set with the result from the select query
 insert - Inserts a row into database
 update - updates a row in the database
-delete - delets a row or in database
+delete - deletes a row in the database
 </pre>
 --------------------------------------------------
 
