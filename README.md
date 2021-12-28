@@ -10,11 +10,13 @@ Github Link: https://github.com/211101-java-react-enterprise/CryptoWallet_p1
 Our mapper is of a singleton design and requires that you not only get an instance, but before it is used it's 
 required that you pass your database credentials in useing the mapper's setProperties method. This method takes
 in a properties object that should look like the following:
+<pre>
 +++++++++++++++++++++++++++++++++++++++++++++++++
-- url={URL to database here}
-- username={username}
-- password={password}
+url={URL to database here}
+username={username}
+password={password}
 ++++++++++++++++++++++++++++++++++++++++++++++++++
+</pre>
 --------------------------------------------------
 
 ### Method Naming Conventions
