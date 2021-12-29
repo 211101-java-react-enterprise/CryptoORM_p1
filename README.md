@@ -3,16 +3,14 @@ Built by Andrew Aslakson and Cole Paris.
 
 ORM project created in revature batch 211101 java-react-enterprise curriculum.
 
-This project was built for use in a servlet based webApplication that allowed users to pretend to trade CryptoCurrencies.
+This project was built for use in a servlet based web application that allowed users to simulate cryptocurrency trading.
 
 Github Link: https://github.com/211101-java-react-enterprise/CryptoWallet_p1
 
 ------------------------------------------------
 
 ### Mapper
-Our mapper is of a singleton design and requires that you not only get an instance, but before it is used it's 
-required that you pass your database credentials in using the mapper's setProperties method. This method takes
-in a properties object that should look like the following:
+Our mapper is of a singleton design (only has one instance) and must be set before used. This is done by passing in database credentials to the mapper's setProperty method which takes in a properties object that should look like the following:
 <pre>
 url={URL to database here}
 username={username}
